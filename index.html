@@ -9,17 +9,17 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: white; /* רקע לבן */
+            background-color: white;
         }
         .container {
             max-width: 100%;
             margin: 0 auto;
-            background-color: white; /* רקע לבן */
+            background-color: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        h1, h2 {
+        h1 {
             text-align: center;
             color: #333;
             font-size: 24px;
@@ -44,6 +44,14 @@
             padding: 10px;
             font-size: 16px;
             box-sizing: border-box;
+        }
+        .large-input {
+            font-size: 18px;
+            padding: 15px;
+            width: 120px;
+        }
+        .row-checked {
+            background-color: #d4edda; /* צבע ירוק */
         }
         #summary {
             margin-top: 20px;
@@ -70,56 +78,11 @@
         button:hover {
             background-color: #45a049;
         }
-        /* עיצוב לשורה שנבחרה */
-        .row-checked {
-            background-color: #d4edda; /* צבע ירוק */
-        }
-
-        /* התאמה לתצוגה אופקית */
-        @media (orientation: portrait) {
-            body {
-                padding: 10px;
-            }
-            h1 {
-                font-size: 22px;
-            }
-            table {
-                font-size: 14px;
-            }
-        }
-
-        /* Confetti Animation */
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f5b7b1;
-            border-radius: 50%;
-            animation: fall 5s linear infinite;
-        }
-        @keyframes fall {
-            0% {
-                top: -10px;
-                left: 50%;
-                opacity: 1;
-            }
-            100% {
-                top: 100%;
-                left: calc(50% + 100px);
-                opacity: 0;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>מחשבון שעות עבודה לאבשיפוד</h1>
-
-        <!-- נגן מוזיקה אוטומטי -->
-        <audio id="backgroundMusic" autoplay loop>
-            <source src="music.mp3" type="audio/mpeg">
-            הדפדפן שלך לא תומך בניגון קובץ אודיו.
-        </audio>
 
         <div class="controls">
             <select id="monthSelect"></select>
@@ -128,13 +91,13 @@
         
         <table id="workTable">
             <tr>
-                <th>קבלת מעטפה</th> <!-- עמודה חדשה -->
+                <th>קבלת מעטפה</th> <!-- עמודה הכי ימנית -->
                 <th>תאריך</th>
-                <th>יום</th>
                 <th>שעות עבודה</th>
                 <th>שכר לשעה (₪)</th>
-                <th>סה"כ שכר (₪)</th>
                 <th>השלמה ל-65 ש״ח (₪)</th>
+                <th>השלמה ל-65 ש״ח (₪) סה"כ</th>
+                <th>סה"כ שכר (₪)</th>
                 <th>סה"כ כולל השלמה (₪)</th>
             </tr>
         </table>
@@ -143,7 +106,6 @@
 
     <script>
         const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
-        const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
         const table = document.getElementById('workTable');
         const monthSelect = document.getElementById('monthSelect');
         const yearInput = document.getElementById('yearInput');
@@ -160,25 +122,35 @@
             return new Date(year, month + 1, 0).getDate();
         }
 
+        function saveData(key, value) {
+            localStorage.setItem(key, value);
+        }
+
+        function loadData(key) {
+            return localStorage.getItem(key) || '';
+        }
+
         function createInputCell(type, min, max, value = '', dataKey) {
             const input = document.createElement('input');
             input.type = type;
             input.min = min;
             if (max) input.max = max;
             input.value = value;
+            input.classList.add('large-input');
             input.addEventListener('input', () => {
-                calculateTotals();
                 saveData(dataKey, input.value);
-                checkCompletion();
+                calculateTotals();
             });
             return input;
         }
 
-        function createCheckboxCell() {
+        function createCheckboxCell(dataKey) {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
+            checkbox.checked = loadData(dataKey) === 'true';
             checkbox.addEventListener('change', function() {
                 const row = this.closest('tr');
+                saveData(dataKey, checkbox.checked);
                 if (this.checked) {
                     row.classList.add('row-checked'); // הוספת עיצוב ירוק לשורה
                 } else {
@@ -186,14 +158,6 @@
                 }
             });
             return checkbox;
-        }
-
-        function saveData(key, value) {
-            localStorage.setItem(key, value);
-        }
-
-        function loadData(key) {
-            return localStorage.getItem(key) || '';
         }
 
         function updateTable() {
@@ -209,24 +173,24 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
                 const row = table.insertRow();
-                
-                // עמודה של קבלת מעטפה
-                const checkboxCell = row.insertCell();
-                checkboxCell.appendChild(createCheckboxCell());
 
-                row.insertCell().textContent = `${day}/${month + 1}/${year}`;
-                row.insertCell().textContent = days[date.getDay()];
+                const envelopeKey = `envelope-${year}-${month}-${day}`;
+                row.insertCell().appendChild(createCheckboxCell(envelopeKey)); // קבלת מעטפה
+
+                row.insertCell().textContent = `${day}/${month + 1}/${year}`; // תאריך
 
                 const hoursKey = `hours-${year}-${month}-${day}`;
                 const rateKey = `rate-${year}-${month}-${day}`;
                 const savedHours = loadData(hoursKey);
                 const savedRate = loadData(rateKey);
 
-                row.insertCell().appendChild(createInputCell('number', '0', '24', savedHours, hoursKey));
-                row.insertCell().appendChild(createInputCell('number', '0', '', savedRate, rateKey));
-                row.insertCell();
-                row.insertCell();
-                row.insertCell();
+                row.insertCell().appendChild(createInputCell('number', '0', '24', savedHours, hoursKey)); // שעות עבודה
+                row.insertCell().appendChild(createInputCell('number', '0', '', savedRate, rateKey)); // שכר לשעה
+
+                row.insertCell(); // השלמה ל-65 ש״ח (₪)
+                row.insertCell(); // השלמה ל-65 ש״ח (₪) סה"כ
+                row.insertCell(); // סה"כ שכר
+                row.insertCell(); // סה"כ כולל השלמה
             }
 
             calculateTotals();
@@ -239,26 +203,35 @@
 
             for (let i = 1; i < table.rows.length; i++) {
                 const row = table.rows[i];
-                const hours = parseFloat(row.cells[3].querySelector('input').value) || 0;
-                const hourlyRate = parseFloat(row.cells[4].querySelector('input').value) || 0;
+                const hours = parseFloat(row.cells[2].querySelector('input').value) || 0;
+                let hourlyRate = parseFloat(row.cells[3].querySelector('input').value);
 
-                let salary = hours * hourlyRate;
-                let completion = 0;
-                let total = salary;
-
-                // Calculate completion only if the hourly rate is below 65
-                if (hourlyRate > 0 && hourlyRate < 65) {
-                    completion = (65 - hourlyRate) * hours; // שינוי לחישוב השלמה ל-65 ש"ח
-                    total = salary + completion;
+                // Default hourly rate to 0 if not set
+                if (isNaN(hourlyRate)) {
+                    hourlyRate = 0;
+                    row.cells[3].querySelector('input').value = 0;
                 }
 
-                row.cells[5].textContent = salary.toFixed(2);  // Total salary
-                row.cells[6].textContent = completion > 0 ? completion.toFixed(2) : '';  // Completion amount
-                row.cells[7].textContent = total.toFixed(2);  // Total including completion
+                let salary = hours * hourlyRate;
+                let completionPerHour = 0;
+                let totalCompletionAmount = 0;
+                let total = salary;
+
+                // Calculate completion if the rate is below 65
+                if (hourlyRate === 0 || hourlyRate < 65) {
+                    completionPerHour = 65 - hourlyRate;
+                    totalCompletionAmount = completionPerHour * hours;
+                    total = salary + totalCompletionAmount;
+                }
+
+                row.cells[4].textContent = completionPerHour.toFixed(2);  // השלמה ל-65 ש״ח (₪)
+                row.cells[5].textContent = totalCompletionAmount.toFixed(2);  // השלמה ל-65 ש״ח (₪) סה"כ
+                row.cells[6].textContent = salary.toFixed(2);  // סה"כ שכר
+                row.cells[7].textContent = total.toFixed(2);  // סה"כ כולל השלמה
 
                 totalHours += hours;
                 totalSalary += salary;
-                totalCompletion += completion;
+                totalCompletion += totalCompletionAmount;
             }
 
             const summary = document.getElementById('summary');
