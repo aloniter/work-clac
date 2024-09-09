@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחשבון שעות עבודה לאבשיפוד</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        input, select {
+            width: 80px;
+            text-align: center;
+        }
+        #summary {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>מחשבון שעות עבודה לאבשיפוד</h1>
+        
+        
+        <div class="controls">
+            <select id="monthSelect"></select>
+            <input type="number" id="yearInput" placeholder="שנה" value="2024">
+        </div>
+        <table id="workTable">
+            <tr>
+                <th>תאריך</th>
+                <th>יום</th>
+                <th>שעות עבודה</th>
+                <th>שכר לשעה (₪)</th>
+                <th>סה"כ שכר (₪)</th>
+                <th>השלמה ל-60 ש״ח (₪)</th>
+                <th>סה"כ כולל השלמה (₪)</th>
+            </tr>
+        </table>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+        const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+        const table = document.getElementById('workTable');
+        const monthSelect = document.getElementById('monthSelect');
+        const yearInput = document.getElementById('yearInput');
+        const music = document.getElementById("backgroundMusic");
+
+        // Play music on button click
+        function playMusic() {
+            music.play();
+        }
+
+        // Initialize the month dropdown
+        months.forEach((month, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = month;
+            monthSelect.appendChild(option);
+        });
+
+        function getDaysInMonth(month, year) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+
+        function createInputCell(type, min, max, value = '', dataKey) {
+            const input = document.createElement('input');
+            input.type = type;
+            input.min = min;
+            if (max) input.max = max;
+            input.value = value;
+            input.addEventListener('input', () => {
+                calculateTotals();
+                saveData(dataKey, input.value);
+            });
+            return input;
+        }
+
+        function saveData(key, value) {
+            localStorage.setItem(key, value);
+        }
+
+        function loadData(key) {
+            return localStorage.getItem(key) || '';
+        }
+
+        function updateTable() {
+            const month = parseInt(monthSelect.value);
+            const year = parseInt(yearInput.value);
+            const daysInMonth = getDaysInMonth(month, year);
+
+            // Clear existing rows
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const row = table.insertRow();
+                row.insertCell().textContent = `${day}/${month + 1}/${year}`;
+                row.insertCell().textContent = days[date.getDay()];
+
+                const hoursKey = `hours-${year}-${month}-${day}`;
+                const rateKey = `rate-${year}-${month}-${day}`;
+                const savedHours = loadData(hoursKey);
+                const savedRate = loadData(rateKey);
+
+                row.insertCell().appendChild(createInputCell('number', '0', '24', savedHours, hoursKey));
+                row.insertCell().appendChild(createInputCell('number', '0', '', savedRate, rateKey));
+                row.insertCell();
+                row.insertCell();
+                row.insertCell();
+            }
+
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let totalHours = 0;
+            let totalSalary = 0;
+            let totalCompletion = 0;
+
+            for (let i = 1; i < table.rows.length; i++) {
+                const row = table.rows[i];
+                const hours = parseFloat(row.cells[2].querySelector('input').value) || 0;
+                const hourlyRate = parseFloat(row.cells[3].querySelector('input').value) || 0;
+
+                let salary = hours * hourlyRate;
+                let completion = 0;
+                let total = salary;
+
+                // Calculate completion only if the hourly rate is below 60
+                if (hourlyRate > 0 && hourlyRate < 60) {
+                    completion = (60 - hourlyRate) * hours;
+                    total = salary + completion;
+                }
+
+                row.cells[4].textContent = salary.toFixed(2);  // Total salary
+                row.cells[5].textContent = completion > 0 ? completion.toFixed(2) : '';  // Completion amount
+                row.cells[6].textContent = total.toFixed(2);  // Total including completion
+
+                totalHours += hours;
+                totalSalary += salary;
+                totalCompletion += completion;
+            }
+
+            const summary = document.getElementById('summary');
+            summary.innerHTML = `
+                סה"כ שעות עבודה: ${totalHours.toFixed(2)}<br>
+                סה"כ שכר לפני השלמה: ${totalSalary.toFixed(2)} ₪<br>
+                סה"כ השלמה: ${totalCompletion.toFixed(2)} ₪<br>
+                סה"כ כולל השלמה: ${(totalSalary + totalCompletion).toFixed(2)} ₪
+            `;
+        }
+
+        monthSelect.addEventListener('change', updateTable);
+        yearInput.addEventListener('input', updateTable);
+
+        // Initialize the table with the current month and year
+        updateTable();
+    </script>
+</body>
+</html>
