@@ -70,6 +70,20 @@
         button:hover {
             background-color: #45a049;
         }
+
+        /* התאמה לתצוגה אופקית */
+        @media (orientation: portrait) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            table {
+                font-size: 14px;
+            }
+        }
+
         /* Confetti Animation */
         .confetti {
             position: absolute;
@@ -96,6 +110,12 @@
 <body>
     <div class="container">
         <h1>מחשבון שעות עבודה לאבשיפוד</h1>
+
+        <!-- נגן מוזיקה אוטומטי -->
+        <audio id="backgroundMusic" autoplay loop>
+            <source src="music.mp3" type="audio/mpeg">
+            הדפדפן שלך לא תומך בניגון קובץ אודיו.
+        </audio>
 
         <div class="controls">
             <select id="monthSelect"></select>
@@ -226,6 +246,7 @@
             `;
         }
 
+        
 
         monthSelect.addEventListener('change', updateTable);
         yearInput.addEventListener('input', updateTable);
