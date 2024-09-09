@@ -45,10 +45,11 @@
             font-size: 16px;
             box-sizing: border-box;
         }
+        /* הגדלת שדות הקלט להתאמה ל-4 ספרות */
         .large-input {
-            font-size: 18px;
-            padding: 15px;
-            width: 120px;
+            font-size: 20px; /* גודל גופן גדול יותר */
+            padding: 15px; /* ריווח פנימי גדול יותר */
+            width: 140px; /* התאמת רוחב */
         }
         .row-checked {
             background-color: #d4edda; /* צבע ירוק */
@@ -136,7 +137,7 @@
             input.min = min;
             if (max) input.max = max;
             input.value = value;
-            input.classList.add('large-input');
+            input.classList.add('large-input'); // הגדלת השדה
             input.addEventListener('input', () => {
                 saveData(dataKey, input.value);
                 calculateTotals();
@@ -144,12 +145,14 @@
             return input;
         }
 
-        function createCheckboxCell(dataKey) {
+        function createCheckboxCell(dataKey, row) {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = loadData(dataKey) === 'true';
+            if (checkbox.checked) {
+                row.classList.add('row-checked'); // הוספת עיצוב ירוק לשורה אם כבר נבחר בעבר
+            }
             checkbox.addEventListener('change', function() {
-                const row = this.closest('tr');
                 saveData(dataKey, checkbox.checked);
                 if (this.checked) {
                     row.classList.add('row-checked'); // הוספת עיצוב ירוק לשורה
@@ -175,7 +178,7 @@
                 const row = table.insertRow();
 
                 const envelopeKey = `envelope-${year}-${month}-${day}`;
-                row.insertCell().appendChild(createCheckboxCell(envelopeKey)); // קבלת מעטפה
+                row.insertCell().appendChild(createCheckboxCell(envelopeKey, row)); // קבלת מעטפה
 
                 row.insertCell().textContent = `${day}/${month + 1}/${year}`; // תאריך
 
