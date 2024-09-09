@@ -9,12 +9,12 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: white; /* רקע לבן */
         }
         .container {
             max-width: 100%;
             margin: 0 auto;
-            background-color: white;
+            background-color: white; /* רקע לבן */
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -70,6 +70,27 @@
         button:hover {
             background-color: #45a049;
         }
+        /* Confetti Animation */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f5b7b1;
+            border-radius: 50%;
+            animation: fall 5s linear infinite;
+        }
+        @keyframes fall {
+            0% {
+                top: -10px;
+                left: 50%;
+                opacity: 1;
+            }
+            100% {
+                top: 100%;
+                left: calc(50% + 100px);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -123,6 +144,7 @@
             input.addEventListener('input', () => {
                 calculateTotals();
                 saveData(dataKey, input.value);
+                checkCompletion();
             });
             return input;
         }
@@ -203,6 +225,7 @@
                 סה"כ כולל השלמה: ${(totalSalary + totalCompletion).toFixed(2)} ₪
             `;
         }
+
 
         monthSelect.addEventListener('change', updateTable);
         yearInput.addEventListener('input', updateTable);
