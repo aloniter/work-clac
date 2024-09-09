@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>מחשבון שעות עבודה לאבשיפוד</title>
     <style>
         body {
@@ -12,7 +12,7 @@
             background-color: #f0f0f0;
         }
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
             background-color: white;
             padding: 20px;
@@ -22,6 +22,7 @@
         h1, h2 {
             text-align: center;
             color: #333;
+            font-size: 24px;
         }
         table {
             width: 100%;
@@ -30,37 +31,56 @@
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
             text-align: center;
+            font-size: 16px;
         }
         th {
             background-color: #f2f2f2;
         }
         input, select {
-            width: 80px;
+            width: 100%;
             text-align: center;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
         }
         #summary {
             margin-top: 20px;
             font-weight: bold;
+            font-size: 18px;
         }
         .controls {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
             margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px;
+            text-align: center;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>מחשבון שעות עבודה לאבשיפוד</h1>
-        
-        
+
         <div class="controls">
             <select id="monthSelect"></select>
             <input type="number" id="yearInput" placeholder="שנה" value="2024">
         </div>
+        
         <table id="workTable">
             <tr>
                 <th>תאריך</th>
@@ -81,12 +101,6 @@
         const table = document.getElementById('workTable');
         const monthSelect = document.getElementById('monthSelect');
         const yearInput = document.getElementById('yearInput');
-        const music = document.getElementById("backgroundMusic");
-
-        // Play music on button click
-        function playMusic() {
-            music.play();
-        }
 
         // Initialize the month dropdown
         months.forEach((month, index) => {
