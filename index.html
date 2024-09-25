@@ -145,7 +145,7 @@
             return input;
         }
 
-        function createCheckboxCell(dataKey, row) {
+       function createCheckboxCell(dataKey, row) {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = loadData(dataKey) === 'true';
@@ -156,6 +156,10 @@
                 saveData(dataKey, checkbox.checked);
                 if (this.checked) {
                     row.classList.add('row-checked'); // הוספת עיצוב ירוק לשורה
+
+                    // Play "Penalti a favor del real madrid" audio when checkbox is checked
+                    var audio = new Audio('Penalti a favor del real madrid.mp3');
+                    audio.play();
                 } else {
                     row.classList.remove('row-checked'); // הסרת העיצוב הירוק
                 }
